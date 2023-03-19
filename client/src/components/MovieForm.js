@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 
 function MovieForm() {
+  const [errors, setErrors] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     year: new Date().getFullYear(),
@@ -23,8 +24,13 @@ function MovieForm() {
       },
       body: JSON.stringify(formData),
     })
-      .then((response) => response.json())
-      .then((newMovie) => console.log(newMovie));
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((newMovie) => console.log(newMovie));
+      } else {
+        response.json().then((errorData) => setErrors(errorData.errors));
+      }
+    })
   }
 
   function handleChange(e) {
@@ -35,7 +41,6 @@ function MovieForm() {
       [e.target.id]: value,
     });
   }
-
   return (
     <Wrapper>
       <form onSubmit={handleSubmit}>
@@ -125,24 +130,29 @@ function MovieForm() {
             />
           </label>
         </FormGroup>
+        {/* Errors Display */}
+        {errors.length > 0 && (
+          <ul style={{color: "red"}}>
+            {errors.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        )}
         <SubmitButton type="submit">Add Movie</SubmitButton>
       </form>
     </Wrapper>
   );
 }
-
 const Wrapper = styled.section`
   max-width: 500px;
   margin: 32px auto;
   padding: 32px;
 `;
-
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
 `;
-
 const SubmitButton = styled.button`
   background: blue;
   color: yellow;
@@ -153,5 +163,4 @@ const SubmitButton = styled.button`
   padding: 8px 16px;
   cursor: pointer;
 `;
-
 export default MovieForm;
